@@ -3,10 +3,43 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Number Generator</title>
 </head>
 <body>
-    
+    <div class="content">
+        <div class="display-section">
+            <div id="display-single" style="display:block;">
+                <p></p>
+            </div>
+            <div id="display-list" style="display:none;">
+                <div id="display-list-1" style="display:none;"><p>2,4,6,8,10,12,14,16,18,20</p></div>
+                <div id="display-list-2" style="display:none;"><p>1,3,5,7,9,11,13,15,17,19</p></div>
+            </div>
+        </div>
+        <button class="generate" onclick="generate()">Generate</button>
+        <div class="options-menu">
+            <button class="options-open">Options</button>
+            <div class="slidecontainer">
+                <input type="range" min="1" max="100" value="50" class="slider" id="even-odd-range">
+            </div>
+            <div class="checkbox-section">
+                <input type="checkbox" id="generate-single" name="genSingle" checked />
+                <label for="genSingle">Generate Single</label>
+
+                <input type="checkbox" id="generate-list" name="genList" />
+                <label for="genList">Generate List</label>
+
+                <input type="checkbox" id="generate-ramp" name="genRamp" />
+                <label for="genRamp">Generate Ramp</label>
+            </div>
+
+            <button class="options-close">Close</button>
+        </div>
+    </div>
 </body>
 <script src="/app.js"></script>
 </html>
