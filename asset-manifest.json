@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Even-Odd-NumberGenerator/static/css/main.6ae43f48.css",
+    "main.js": "/Even-Odd-NumberGenerator/static/js/main.2688b97a.js",
+    "static/js/453.95547adf.chunk.js": "/Even-Odd-NumberGenerator/static/js/453.95547adf.chunk.js",
+    "index.html": "/Even-Odd-NumberGenerator/index.html",
+    "main.6ae43f48.css.map": "/Even-Odd-NumberGenerator/static/css/main.6ae43f48.css.map",
+    "main.2688b97a.js.map": "/Even-Odd-NumberGenerator/static/js/main.2688b97a.js.map",
+    "453.95547adf.chunk.js.map": "/Even-Odd-NumberGenerator/static/js/453.95547adf.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6ae43f48.css",
+    "static/js/main.2688b97a.js"
+  ]
+}
