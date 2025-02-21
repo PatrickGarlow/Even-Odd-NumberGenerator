@@ -1,6 +1,6 @@
 import React from "react";
 
-function SettingsPanel({ isOpen, onClose, settings, updateSettings, rampSize, setRampSize, maxRampSize }) {
+function SettingsPanel({ isOpen, onClose, evenWeights, oddWeights, updateWeights, settings, updateSettings, rampSize, setRampSize, maxRampSize }) {
   return isOpen ? (
     <div className="settings-modal">
       <h2>Settings</h2>
@@ -22,8 +22,34 @@ function SettingsPanel({ isOpen, onClose, settings, updateSettings, rampSize, se
             : `${100 - settings.evenOddSlider}% Even / ${settings.evenOddSlider}% Odd`}
         </span>
       </div>
-
-      {/* Ramp Size Slider */}
+      <h3>Even Number Distribution</h3>
+      {Object.keys(evenWeights).map((num) => (
+  <div key={num} className="slider-container">
+    <label>{num}: {evenWeights[num]}%</label>
+    <input
+    className="slider-object"
+      type="range"
+      min="1"
+      max="100"
+      value={evenWeights[num]}
+      onChange={(e) => updateWeights(parseInt(num), parseInt(e.target.value), true)}
+    />
+  </div>
+))}
+ <h3>Odd Number Distribution</h3>
+{Object.keys(oddWeights).map((num) => (
+  <div key={num} className="slider-container">
+    <label>{num}: {oddWeights[num]}%</label>
+    <input
+    className="slider-object"
+      type="range"
+      min="1"
+      max="100"
+      value={oddWeights[num]}
+      onChange={(e) => updateWeights(parseInt(num), parseInt(e.target.value), false)}
+    />
+  </div>
+))}      {/* Ramp Size Slider */}
       <label>Ramp Size: {rampSize}</label>
       <div className="slider-container">
         <input
@@ -62,8 +88,6 @@ function SettingsPanel({ isOpen, onClose, settings, updateSettings, rampSize, se
           </label>
         </div>  
       </div>
-
-      <button onClick={onClose}>Close</button>
     </div>
   ) : null;
 }

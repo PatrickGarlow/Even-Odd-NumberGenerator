@@ -21,30 +21,44 @@ const weightedNumbers = [
   { number: 14, weight: 6 },
 ];
 
-function getRandomNumber(sliderValue, settings) {
-  const evenNumbers = weightedNumbers.filter(({ number }) => number % 2 === 0);
-  const oddNumbers = weightedNumbers.filter(({ number }) => number % 2 !== 0);
+function getRandomNumber(sliderValue, settings, evenWeights = {}, oddWeights = {}) {
+  // Ensure evenWeights and oddWeights are always valid objects
+  evenWeights = evenWeights || {};
+  oddWeights = oddWeights || {};
 
-  const expandedEvens = evenNumbers.flatMap(({ number, weight }) => Array(weight).fill(number));
-  const expandedOdds = oddNumbers.flatMap(({ number, weight }) => Array(weight).fill(number));
+  const evenNumbers = Object.keys(evenWeights).map(num => ({
+    number: parseInt(num),
+    weight: evenWeights[num] || 0
+  }));
+
+  const oddNumbers = Object.keys(oddWeights).map(num => ({
+    number: parseInt(num),
+    weight: oddWeights[num] || 0
+  }));
 
   const evenProbability = (100 - sliderValue) / 100;
   const isEven = Math.random() < evenProbability;
-  const sourceArray = isEven ? expandedEvens : expandedOdds;
+  const sourceArray = isEven ? evenNumbers : oddNumbers;
 
-  const randomIndex = Math.floor(Math.random() * sourceArray.length);
-  const selectedNumber = sourceArray[randomIndex];
+  // Ensure there is at least one valid number
+  let weightedPool = sourceArray.flatMap(({ number, weight }) => Array(weight).fill(number));
+  if (weightedPool.length === 0) {
+    return { id: uuidv4(), number: isEven ? 2 : 1, note: "", isRover: false, noteTag: "note-null" };
+  }
+
+  // Select a random number
+  const randomIndex = Math.floor(Math.random() * weightedPool.length);
+  const selectedNumber = weightedPool[randomIndex];
 
   let isRover = settings.roverRequests && Math.random() < 0.2;
-
   let note = "";
-  if (!isRover && settings.rowRequests && Math.random() < 0.3) { // Only assign a row request if it's NOT a rover
+  if (!isRover && settings.rowRequests && Math.random() < 0.3) { 
     const rowRequestChance = Math.random();
     if (rowRequestChance < 0.6) {
-      note = "Row 1"; // 60% chance
+      note = "Row 1"; 
     } else {
       const rowOptions = ["Not front", "Back bikes", "Middle"];
-      note = rowOptions[Math.floor(Math.random() * rowOptions.length)]; // 40% split among other options
+      note = rowOptions[Math.floor(Math.random() * rowOptions.length)];
     }
   }
 
@@ -52,6 +66,8 @@ function getRandomNumber(sliderValue, settings) {
 
   return { id: uuidv4(), number: selectedNumber, note, isRover, noteTag };
 }
+
+
 
 
 
@@ -66,7 +82,42 @@ function App() {
     rowRequests: false,
     roverRequests: false,
   });
+  const totalEvenWeight = 100; // Total weight for even numbers
+  const totalOddWeight = 100;  // Total weight for odd numbers
 
+  const [evenWeights, setEvenWeights] = useState({
+    2: 30, 4: 30, 6: 20, 8: 10, 10: 5, 12: 4, 14: 1
+  });
+  const [oddWeights, setOddWeights] = useState({
+    1: 30, 3: 30, 5: 20, 7: 10, 9: 10, 11: 4, 13: 1
+  });
+
+
+const updateWeights = (number, newWeight, isEven) => {
+  let weights = isEven ? { ...evenWeights } : { ...oddWeights };
+  let totalWeight = isEven ? totalEvenWeight : totalOddWeight;
+  let remainingTotal = totalWeight - newWeight;
+  let otherNumbers = Object.keys(weights).filter(num => parseInt(num) !== number);
+  
+  // Prevent NaN issue if remaining total is 0
+  if (remainingTotal <= 0) {
+    otherNumbers.forEach(num => (weights[num] = 0)); // Set all others to 0
+  } else {
+    let totalCurrentOther = otherNumbers.reduce((sum, num) => sum + weights[num], 0) || 1; // Avoid division by 0
+    otherNumbers.forEach(num => {
+      weights[num] = Math.max(0, Math.round((weights[num] / totalCurrentOther) * remainingTotal));
+    });
+  }
+
+  weights[number] = newWeight;
+
+  if (isEven) {
+    setEvenWeights(weights);
+  } else {
+    setOddWeights(weights);
+  }
+};
+  
   const [rampSize, setRampSize] = useState(7);
   const maxRampSize = 15;
 
@@ -79,7 +130,7 @@ function App() {
   }, [rampSize]);
 
   const generateNewNumber = () => {
-    const newNumber = getRandomNumber(settings.evenOddSlider, settings);
+    const newNumber = getRandomNumber(settings.evenOddSlider, settings, evenWeights, oddWeights);
     setNumbers((prev) => {
       if (prev.length > 0) {
         setCurrentNumber(prev[0]);
@@ -89,26 +140,27 @@ function App() {
         return [newNumber];
       }
     });
-    setSelectedNumberId(null); // Reset selection
+    setSelectedNumberId(null); 
   };
+  
+  
 
   const removeNumber = (id) => {
     setNumbers((prev) => {
-      // Filter out the deleted number
       const updatedNumbers = prev.filter((num) => num.id !== id);
-  
-      // Generate a new number to replace the removed one
-      const newNumber = getRandomNumber(settings.evenOddSlider, settings);
-  
-      // Ensure ramp stays the same size by adding a new number at the end
-      return [...updatedNumbers, newNumber];
+      if (updatedNumbers.length < rampSize) {
+        const newNumber = getRandomNumber(settings.evenOddSlider, settings, evenWeights, oddWeights);
+        updatedNumbers.push(newNumber);
+      }
+      return updatedNumbers;
     });
   
-    // If the deleted number was selected, reset selection
     if (id === selectedNumberId) {
       setSelectedNumberId(null);
     }
   };
+  
+  
 
   return (
     <div className="grouper-container">
@@ -125,9 +177,13 @@ function App() {
   settings={settings}
   updateSettings={(key, value) => setSettings((prev) => ({ ...prev, [key]: value }))}
   rampSize={rampSize}
+  maxRampSize= {20}
   setRampSize={setRampSize}
-  maxRampSize={maxRampSize}
+  evenWeights={evenWeights}
+  oddWeights={oddWeights}
+  updateWeights={updateWeights}
 />
+
 
       {/* Current Number */}
       <div className="display-section">
